@@ -13,8 +13,3 @@ type SearchPatientDto struct {
 	Email       string
 	Hospital    string
 }
-
-type SearchPatientId struct {
-	NationalId string
-	PassportId string
-}
