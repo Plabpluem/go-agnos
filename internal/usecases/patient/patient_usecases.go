@@ -8,6 +8,7 @@ import (
 type PatientUseCase interface {
 	CreatePatient(patient *entities.Patient) (*entities.Patient, error)
 	SearchPatient(query *dto.SearchPatientDto) ([]*entities.Patient, error)
+	SearchPatientId(id string) (*entities.Patient, error)
 }
 
 type PatientService struct {
@@ -24,4 +25,8 @@ func (s *PatientService) CreatePatient(patient *entities.Patient) (*entities.Pat
 
 func (s *PatientService) SearchPatient(query *dto.SearchPatientDto) ([]*entities.Patient, error) {
 	return s.repo.Findone(query)
+}
+
+func (s *PatientService) SearchPatientId(id string) (*entities.Patient, error) {
+	return s.repo.FindoneId(id)
 }

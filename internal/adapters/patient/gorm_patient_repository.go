@@ -76,3 +76,16 @@ func (r *GormPatientRepository) Findone(query *dto.SearchPatientDto) ([]*entitie
 	}
 	return patient, nil
 }
+
+func (r *GormPatientRepository) FindoneId(param string) (*entities.Patient, error) {
+	var patient *entities.Patient
+
+	db := r.db.Model(patient).Where("national_id = ?", param).Or("passport_id = ?", param)
+
+	err := db.First(&patient).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return patient, nil
+}

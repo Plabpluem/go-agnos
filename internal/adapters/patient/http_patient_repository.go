@@ -77,3 +77,20 @@ func (h *HttpPatientHandler) SearchPatient(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "search success", "statusCode": 200, "data": patient})
 }
+
+func (h *HttpPatientHandler) SearchPatientId(c *gin.Context) {
+	patientID := c.Param("id")
+
+	if patientID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Id is required"})
+		return
+	}
+
+	patient, err := h.patientUseCase.SearchPatientId(patientID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "search success", "statusCode": 200, "data": patient})
+
+}

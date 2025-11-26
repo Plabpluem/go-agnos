@@ -548,3 +548,86 @@ func TestPatient_SearchPatientWithQuery_Success(t *testing.T) {
 	assert.Equal(t, int(1), len(response["data"].([]interface{})))
 	assert.Equal(t, "กัญชนก", firstObject["first_name_th"])
 }
+
+func TestPatient_SearchPatientById_Success(t *testing.T) {
+	r, db := setupTestRouter()
+	defer clearDatabase(db)
+
+	createStaffDto := entities.Staff{
+		Username: "walawala",
+		Password: "89058905",
+		Hospital: "Bangkok Hospital",
+	}
+	token := createLoginStaffViaApi(t, r, createStaffDto)
+
+	firstDto := map[string]string{
+		"first_name_th":  "ปลาบปลื้ม",
+		"middle_name_th": "-",
+		"last_name_th":   "ยอดจันทร์",
+		"first_name_en":  "Plabpluem",
+		"middle_name_en": "D",
+		"last_name_en":   "Yodchan",
+		"date_of_birth":  "1995-07-21T00:00:00Z",
+		"patient_hn":     "HN00001",
+		"national_id":    "890589058905",
+		"passport_id":    "123456789",
+		"phone_number":   "0812345678",
+		"email":          "plabpluem@example.com",
+		"gender":         "male",
+		"hospital":       "hua-hin hospital",
+	}
+	createPatientViaApi(t, r, firstDto, token)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/patient/search/890589058905", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	r.ServeHTTP(w, req)
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	assert.Equal(t, float64(200), response["statusCode"])
+	assert.Equal(t, "search success", response["message"])
+}
+func TestPatient_SearchPatientById_Fail(t *testing.T) {
+	r, db := setupTestRouter()
+	defer clearDatabase(db)
+
+	createStaffDto := entities.Staff{
+		Username: "walawala",
+		Password: "89058905",
+		Hospital: "Bangkok Hospital",
+	}
+	token := createLoginStaffViaApi(t, r, createStaffDto)
+
+	firstDto := map[string]string{
+		"first_name_th":  "ปลาบปลื้ม",
+		"middle_name_th": "-",
+		"last_name_th":   "ยอดจันทร์",
+		"first_name_en":  "Plabpluem",
+		"middle_name_en": "D",
+		"last_name_en":   "Yodchan",
+		"date_of_birth":  "1995-07-21T00:00:00Z",
+		"patient_hn":     "HN00001",
+		"national_id":    "890589058905",
+		"passport_id":    "",
+		"phone_number":   "0812345678",
+		"email":          "plabpluem@example.com",
+		"gender":         "male",
+		"hospital":       "hua-hin hospital",
+	}
+	createPatientViaApi(t, r, firstDto, token)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/patient/search/123456789", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	r.ServeHTTP(w, req)
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Equal(t, "record not found", response["error"])
+}

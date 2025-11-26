@@ -31,4 +31,5 @@ func PatientRoutes(router *gin.RouterGroup, db *gorm.DB) {
 
 	patientGroup.POST("/create", patientHttp.CreatePatient)
 	patientGroup.GET("/search", patientHttp.SearchPatient)
+	patientGroup.GET("/search/:id", patientHttp.SearchPatientId)
 }
