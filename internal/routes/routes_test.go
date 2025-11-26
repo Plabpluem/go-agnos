@@ -152,6 +152,28 @@ func TestStaffRoutes_CreateStaff_FailUsernameAvailable(t *testing.T) {
 	assert.Equal(t, "username already exist", response["error"])
 }
 
+func TestStaffRoutes_CreateStaff_FailByHospitalRequired(t *testing.T) {
+	r, db := setupTestRouter()
+	defer clearDatabase(db)
+
+	firstData := map[string]string{
+		"username": "walawala",
+		"password": "89058905",
+	}
+	jsonBody, _ := json.Marshal(firstData)
+
+	w1 := httptest.NewRecorder()
+	req1, _ := http.NewRequest("POST", "/staff/create", bytes.NewBuffer(jsonBody))
+	req1.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w1, req1)
+
+	assert.Equal(t, http.StatusBadRequest, w1.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w1.Body.Bytes(), &response)
+
+	assert.Equal(t, []interface{}{"hospital is required"}, response["error"])
+}
+
 func TestStaffRoutes_LoginStaff_Success(t *testing.T) {
 	r, db := setupTestRouter()
 	defer clearDatabase(db)
@@ -208,6 +230,36 @@ func TestStaffRoutes_LoginStaff_Fail(t *testing.T) {
 
 	assert.Equal(t, fmt.Sprintf("user with username %s not found", loginDto["username"]), response["error"])
 
+}
+
+func TestStaffRoutes_LoginStaff_FailByPasswordRequired(t *testing.T) {
+	r, db := setupTestRouter()
+	defer clearDatabase(db)
+
+	createDto := map[string]string{
+		"username": "walawala",
+		"password": "89058905",
+		"hospital": "Bangkok Hospital",
+	}
+	loginDto := map[string]string{
+		"username": "walawala",
+		"hospital": "Bangkok Hospital",
+	}
+	createStaffViaApi(t, r, createDto)
+	jsonBody, _ := json.Marshal(loginDto)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/staff/login", bytes.NewBuffer(jsonBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	fmt.Println(response)
+
+	assert.Equal(t, []interface{}{"password is required"}, response["error"])
 }
 
 func TestStaffRoutes_LoginStaff_FailPasswordWrong(t *testing.T) {

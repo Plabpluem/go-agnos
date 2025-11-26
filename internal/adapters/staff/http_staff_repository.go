@@ -4,10 +4,13 @@ import (
 	"agnos/internal/adapters/staff/dto"
 	"agnos/internal/entities"
 	"agnos/internal/usecases/staff"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,6 +30,21 @@ func (h *HttpStaffHandler) CreateStaff(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	if err := validator.New().Struct(&data); err != nil {
+		errs := err.(validator.ValidationErrors)
+
+		messages := make([]string, 0)
+		for _, e := range errs {
+			messages = append(messages, fmt.Sprintf("%s is %s", strings.ToLower(e.Field()), strings.ToLower(e.Tag())))
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": messages,
+		})
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 	data.Password = string(hashedPassword)
 
@@ -44,6 +62,20 @@ func (h *HttpStaffHandler) Login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&data); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := validator.New().Struct(&data); err != nil {
+		errs := err.(validator.ValidationErrors)
+
+		messages := make([]string, 0)
+		for _, e := range errs {
+			messages = append(messages, fmt.Sprintf("%s is %s", strings.ToLower(e.Field()), strings.ToLower(e.Tag())))
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": messages,
+		})
 		return
 	}
 

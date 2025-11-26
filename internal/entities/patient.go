@@ -16,10 +16,10 @@ type Patient struct {
 	LastNameEn   string    `json:"last_name_en"`
 	DateBirth    time.Time `json:"date_of_birth"`
 	PatientHn    string    `json:"patient_hn"`
-	NationalId   string    `json:"national_id" binding:"required"`
+	NationalId   string    `json:"national_id" validate:"required"`
 	PassportId   string    `json:"passport_id"`
 	PhoneNumber  string    `json:"phone_number"`
 	Email        string    `json:"email"`
-	Gender       string    `json:"gender"`
-	Hospital     string    `json:"hospital" binding:"required"`
+	Gender       string    `json:"gender" binding:"required,oneof=male female"`
+	Hospital     string    `json:"hospital" validate:"required"`
 }

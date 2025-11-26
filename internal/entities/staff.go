@@ -6,7 +6,7 @@ import (
 
 type Staff struct {
 	gorm.Model
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Hospital string `json:"hospital"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+	Hospital string `json:"hospital" validate:"required"`
 }
